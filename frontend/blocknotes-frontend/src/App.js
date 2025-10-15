@@ -3,7 +3,7 @@ import axios from "axios";
 import NotesPage from "./pages/NotesPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import { ThemeProvider, CssBaseline, Button, Box } from "@mui/material";
+import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme/theme";
 import ParticleBackground from "./components/NoteCard";
 
@@ -32,9 +32,7 @@ function App() {
 
   const fetchNotes = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/notes`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(`http://localhost:8080/api/notes/user/${user.id}`);
       setNotes(res.data);
     } catch (err) {
       console.error("Error fetching notes:", err);
@@ -47,18 +45,17 @@ function App() {
 
     try {
       if (isEditing && editingNote) {
-        const res = await axios.put(
-          `http://localhost:8080/api/notes/${editingNote.id}`,
-          { title: newTitle, content: newNote },
-          { withCredentials: true }
-        );
+        const res = await axios.put(`http://localhost:8080/api/notes/${editingNote.id}`, {
+          ...editingNote,
+          title: newTitle,
+          content: newNote,
+        });
         setNotes(notes.map((n) => (n.id === editingNote.id ? res.data : n)));
       } else {
-        const res = await axios.post(
-          `http://localhost:8080/api/notes`,
-          { title: newTitle, content: newNote },
-          { withCredentials: true }
-        );
+        const res = await axios.post(`http://localhost:8080/api/notes/user/${user.id}`, {
+          title: newTitle,
+          content: newNote,
+        });
         setNotes([...notes, res.data]);
       }
     } catch (err) {
@@ -73,9 +70,7 @@ function App() {
 
   const deleteNote = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/notes/${id}`, {
-        withCredentials: true,
-      });
+      await axios.delete(`http://localhost:8080/api/notes/${id}`);
       setNotes(notes.filter((note) => note.id !== id));
     } catch (err) {
       console.error("Error deleting note:", err);
@@ -91,11 +86,7 @@ function App() {
 
   const handleLogin = async ({ username, password }) => {
     try {
-      const res = await axios.post(
-        "http://localhost:8080/api/users/login",
-        { username, password },
-        { withCredentials: true }
-      );
+      const res = await axios.post("http://localhost:8080/api/users/login", { username, password });
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
       setPage("notes");
@@ -104,6 +95,7 @@ function App() {
     }
   };
 
+  // Updated registration function
   const handleRegister = async ({ username, password }) => {
     if (!username.trim() || !password.trim()) {
       alert("Please fill in both username and password.");
@@ -111,26 +103,15 @@ function App() {
     }
 
     try {
-      await axios.post(
-        "http://localhost:8080/api/users/register",
-        { username, password },
-        { withCredentials: true }
-      );
+      await axios.post("http://localhost:8080/api/users", { username, password });
       alert("Registration successful! Please log in.");
-      setPage("login");
+      setPage("login"); // redirect to login page
     } catch {
       alert("Registration failed. Please try again.");
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post(
-        "http://localhost:8080/logout",
-        {},
-        { withCredentials: true }
-      );
-    } catch {}
+  const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
     setNotes([]);
@@ -148,10 +129,6 @@ function App() {
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
 
-  const oauthLogin = (provider) => {
-    window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
@@ -159,34 +136,9 @@ function App() {
 
       {!user ? (
         page === "register" ? (
-          <RegisterPage
-            onRegister={handleRegister}
-            onSwitchToLogin={() => setPage("login")}
-          />
+          <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setPage("login")} />
         ) : (
-          <Box display="flex" flexDirection="column" alignItems="center">
-            <LoginPage
-              onLogin={handleLogin}
-              onSwitchToRegister={() => setPage("register")}
-            />
-
-            <Box mt={2} display="flex" gap={2}>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => oauthLogin("google")}
-              >
-                Login with Google
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={() => oauthLogin("github")}
-              >
-                Login with GitHub
-              </Button>
-            </Box>
-          </Box>
+          <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setPage("register")} />
         )
       ) : (
         <div className="app-root">

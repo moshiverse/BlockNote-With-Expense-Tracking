@@ -2,40 +2,50 @@ package edu.cit.BlockNotes.service;
 
 import edu.cit.BlockNotes.entity.User;
 import edu.cit.BlockNotes.repository.UserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
-
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
-    public User register(String email, String password) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new RuntimeException("User already exists");
-        }
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setDisplayName(email);
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public User getUserById(String id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    public User createUser(User user) {
+        String customId = user.getUsername() + "-" + UUID.randomUUID();
+        user.setId(customId);
         return userRepository.save(user);
     }
 
-    public User login(String email, String password) {
-        return userRepository.findByEmail(email)
-                .filter(u -> u.getPassword() != null && passwordEncoder.matches(password, u.getPassword()))
-                .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+    public User updateUser(String id, User userDetails) {
+        User user = getUserById(id);
+        user.setUsername(userDetails.getUsername());
+        user.setPassword(userDetails.getPassword());
+        return userRepository.save(user);
     }
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public void deleteUser(String id) {
+        userRepository.deleteById(id);
+    }
+
+    public User login(String username, String password) {
+        User user = userRepository.findByUsername(username);
+        if (user != null && user.getPassword().equals(password)) {
+            return user;
+        }
+        throw new RuntimeException("Invalid username or password");
     }
 }

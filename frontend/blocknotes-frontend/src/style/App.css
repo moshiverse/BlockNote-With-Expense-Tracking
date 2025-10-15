@@ -1,0 +1,22 @@
+body {
+  margin: 0;
+  background: #0a0c1d;
+  overflow-x: hidden;
+}
+
+
+.app-root {
+  position: relative;
+  z-index: 1;
+  padding: 20px;  
+  margin: 0 auto;
+}
+
+
+.MuiPaper-root {
+  margin: 15px;
+}
+
+.MuiTypography-h1, .MuiTypography-h2 {
+  text-shadow: 0 0 15px rgba(142, 45, 226, 0.6);
+}

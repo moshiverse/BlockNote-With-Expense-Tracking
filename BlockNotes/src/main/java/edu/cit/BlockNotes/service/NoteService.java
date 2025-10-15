@@ -7,10 +7,10 @@ import edu.cit.BlockNotes.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class NoteService {
-
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
 
@@ -19,20 +19,22 @@ public class NoteService {
         this.userRepository = userRepository;
     }
 
-    public List<Note> getNotesByUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return noteRepository.findByUser(user);
+    public List<Note> getNotesByUser(String userId) {
+        return noteRepository.findByUserId(userId);
     }
 
-    public Note createNote(Long userId, Note note) {
+    public Note createNote(String userId, Note note) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String customId = user.getUsername() + "-note-" + UUID.randomUUID();
+        note.setId(customId);
         note.setUser(user);
+
         return noteRepository.save(note);
     }
 
-    public Note updateNote(Long noteId, Note noteDetails) {
+    public Note updateNote(String noteId, Note noteDetails) {
         Note note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("Note not found"));
         note.setTitle(noteDetails.getTitle());
@@ -40,7 +42,7 @@ public class NoteService {
         return noteRepository.save(note);
     }
 
-    public void deleteNote(Long noteId) {
+    public void deleteNote(String noteId) {
         noteRepository.deleteById(noteId);
     }
 }
