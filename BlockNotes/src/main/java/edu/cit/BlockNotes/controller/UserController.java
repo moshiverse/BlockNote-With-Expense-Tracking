@@ -2,9 +2,10 @@ package edu.cit.BlockNotes.controller;
 
 import edu.cit.BlockNotes.entity.User;
 import edu.cit.BlockNotes.service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -12,6 +13,7 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
     public UserController(UserService userService) {
         this.userService = userService;
     }
@@ -22,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable String id) {
+    public User getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
@@ -36,13 +38,43 @@ public class UserController {
         return userService.login(loginRequest.getUsername(), loginRequest.getPassword());
     }
 
-    @PutMapping("/{id}")
-    public User updateUser(@PathVariable String id, @RequestBody User user) {
-        return userService.updateUser(id, user);
+    @PostMapping("/{id}/add-funds")
+    public ResponseEntity<User> addFunds(@PathVariable Long id, @RequestBody Map<String, Object> request) {
+        Double amount;
+        try {
+            Object obj = request.get("amount");
+            if (obj instanceof Number) {
+                amount = ((Number) obj).doubleValue();
+            } else {
+                amount = Double.parseDouble(obj.toString());
+            }
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Amount must be a valid number");
+        }
+        User updated = userService.addFunds(id, amount);
+        return ResponseEntity.ok(updated);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable String id) {
-        userService.deleteUser(id);
+    @PostMapping("/{id}/add-expense")
+    public ResponseEntity<User> addExpense(@PathVariable Long id, @RequestBody Map<String, Object> request) {
+        Double expense;
+        try {
+            Object obj = request.get("expense");
+            if (obj instanceof Number) {
+                expense = ((Number) obj).doubleValue();
+            } else {
+                expense = Double.parseDouble(obj.toString());
+            }
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Expense must be a valid number");
+        }
+        User updated = userService.addExpense(id, expense);
+        return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/{id}/clear-all")
+    public ResponseEntity<String> clearAll(@PathVariable Long id) {
+        userService.clearUserData(id);
+        return ResponseEntity.ok("All notes cleared and balance reset to 0.");
     }
 }

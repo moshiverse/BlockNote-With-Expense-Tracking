@@ -1,14 +1,16 @@
 package edu.cit.BlockNotes.service;
 
 import edu.cit.BlockNotes.entity.User;
+import edu.cit.BlockNotes.exceptions.ResourceNotFoundException;
 import edu.cit.BlockNotes.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.UUID;
+import org.springframework.transaction.annotation.Transactional;
+
 
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
@@ -19,33 +21,45 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User getUserById(String id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public User getUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
 
     public User createUser(User user) {
-        String customId = user.getUsername() + "-" + UUID.randomUUID();
-        user.setId(customId);
+        user.setBalance(0.0);
         return userRepository.save(user);
-    }
-
-    public User updateUser(String id, User userDetails) {
-        User user = getUserById(id);
-        user.setUsername(userDetails.getUsername());
-        user.setPassword(userDetails.getPassword());
-        return userRepository.save(user);
-    }
-
-    public void deleteUser(String id) {
-        userRepository.deleteById(id);
     }
 
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) {
-            return user;
+        if (user == null || !user.getPassword().equals(password)) {
+            throw new RuntimeException("Invalid credentials");
         }
-        throw new RuntimeException("Invalid username or password");
+        return user;
+    }
+
+    public User addFunds(Long id, Double amount) {
+        User user = getUserById(id);
+        user.setBalance(user.getBalance() + amount);
+        return userRepository.save(user);
+    }
+
+    public User addExpense(Long id, Double expense) {
+        User user = getUserById(id);
+        double newBalance = user.getBalance() - expense;
+        if (newBalance < 0) {
+            throw new RuntimeException("Insufficient funds");
+        }
+        user.setBalance(newBalance);
+        return userRepository.save(user);
+    }
+
+    @Transactional
+    public void clearUserData(Long id) {
+        User user = getUserById(id);
+        user.getNotes().clear();
+
+        user.setBalance(0.0);
+        userRepository.save(user);
     }
 }
