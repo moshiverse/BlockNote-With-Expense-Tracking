@@ -109,6 +109,26 @@ const handleCancelClear = () => {
       setConfirmDialogOpen(false);
     };
 
+const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+const [noteToDelete, setNoteToDelete] = useState(null);
+
+const handleConfirmDelete = async () => {
+  if (noteToDelete) {
+    await onDelete(noteToDelete.id);
+    setNoteToDelete(null);
+    setConfirmDeleteOpen(false);
+  }
+};
+
+const handleCancelDelete = () => {
+  setNoteToDelete(null);
+  setConfirmDeleteOpen(false);
+};
+
+const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+
+
+
 
   return (
     <Container maxWidth={false} disableGutters sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}>
@@ -132,9 +152,11 @@ const handleCancelClear = () => {
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Select value={sort} onChange={(e) => setSort(e.target.value)} size="small" sx={{ minWidth: 100 }}>
+          <Select value={sort} onChange={(e) => setSort(e.target.value)} size="small" sx={{ minWidth: 140 }}>
             <MenuItem value="date">Date</MenuItem>
             <MenuItem value="title">Title</MenuItem>
+            <MenuItem value="expense">Notes</MenuItem>
+            <MenuItem value="note">Expenses</MenuItem> 
           </Select>
 
           <TextField
@@ -149,15 +171,20 @@ const handleCancelClear = () => {
             <AddIcon fontSize="large" />
           </IconButton>
 
-          <Button variant="outlined" color="success" onClick={handleAddFundsClick}>
+          <Button variant="addFunds" color="success" onClick={handleAddFundsClick}>
             Add Funds
           </Button>
 
-          <Button variant="contained" color="error" onClick={handleClearAll}>
+          <Button variant="resetAll" color="error" onClick={handleClearAll}>
             Reset All
           </Button>
 
-          <Button variant="outlined" color="secondary" onClick={onLogout} sx={{ ml: 1 }}>
+          <Button
+            variant="logout"
+            color="secondary"
+            onClick={() => setLogoutConfirmOpen(true)}
+            sx={{ ml: 1 }}
+          >
             Logout
           </Button>
         </Box>
@@ -224,20 +251,23 @@ const handleCancelClear = () => {
                 )}
 
                 <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                  <Button size="small" variant="text" onClick={(e) => openEdit(note, e)}>
+                  <Button size="small" variant="edit" onClick={(e) => openEdit(note, e)}>
                     Edit
                   </Button>
+
                   <Button
                     size="small"
                     color="error"
-                    variant="text"
+                    variant="delete"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onDelete(note.id);
+                      setNoteToDelete(note);
+                      setConfirmDeleteOpen(true);
                     }}
                   >
                     Delete
                   </Button>
+
                 </Box>
               </Paper>
             </Grid>
@@ -326,17 +356,59 @@ const handleCancelClear = () => {
         <DialogTitle>Confirm Reset</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mt: 1 }}>
-            Reset all notes and clear your balance? <br />
+            Reset all notes and clear your balance? <br /> <br />
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelClear}>Cancel</Button>
           <Button onClick={handleConfirmClear} color="error" variant="contained">
-            Yes, Reset All
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete} fullWidth maxWidth="xs">
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1" sx={{ mt: 1 }}>
+            Are you sure you want to delete "{noteToDelete?.title}"? <br /> <br />
+            This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="deleteop">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={logoutConfirmOpen}
+        onClose={() => setLogoutConfirmOpen(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Are you sure you want to logout? You will need to log in again to access your notes.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setLogoutConfirmOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              onLogout(); // Call the App’s logout handler
+              setLogoutConfirmOpen(false);
+            }}
+          >
+            Logout
+          </Button>
+        </DialogActions>
+      </Dialog>
+
     </Container>
   );
 }

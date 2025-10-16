@@ -143,7 +143,7 @@ function App() {
       setPage("login");
       setSuccess("Registration successful! Please log in.");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed.");
+      setError(err.response?.data?.error || "Registration failed.");
       console.error(err);
     }
   };
@@ -177,7 +177,7 @@ function App() {
     setSuccess("Logged out successfully!");
   }, [updateUserAndStorage]);
 
-  const filteredNotes = React.useMemo(
+    const filteredNotes = React.useMemo(
     () =>
       notes
         .filter(
@@ -185,11 +185,12 @@ function App() {
             n.title.toLowerCase().includes(search.toLowerCase()) ||
             n.content.toLowerCase().includes(search.toLowerCase())
         )
-        .sort((a, b) =>
-          sort === "title"
-            ? a.title.localeCompare(b.title)
-            : new Date(b.createdAt) - new Date(a.createdAt)
-        ),
+        .sort((a, b) => {
+          if (sort === "title") return a.title.localeCompare(b.title);
+          if (sort === "expense") return (a.amount || 0) - (b.amount || 0);
+          if (sort === "note") return a.content.localeCompare(b.content);
+          return new Date(b.createdAt) - new Date(a.createdAt); // default: date
+        }),
     [notes, search, sort]
   );
 

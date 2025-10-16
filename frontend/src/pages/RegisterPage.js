@@ -80,7 +80,7 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
                 )
               }}
             />
-            <Button type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>
+            <Button variant="register" type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>
               Register
             </Button>
 

@@ -61,15 +61,72 @@ const theme = createTheme({
         root: {
           borderRadius: 14,
           padding: "12px 24px",
-          background: "linear-gradient(45deg, #8e2de2, #4a00e0)",
           color: "#fff",
           transition: "0.3s",
-          "&:hover": {
-            background: "linear-gradient(45deg, #4a00e0, #8e2de2)",
-            boxShadow: "0 0 20px rgba(142,45,226,0.9)",
-          },
         },
       },
+      
+      variants: [
+        {
+          props: { variant: "login" },
+          style: {
+            backgroundColor: "#2a28a7ff",
+            "&:hover": { backgroundColor: "#218838" },
+          },
+        },
+
+        {
+          props: { variant: "register" },
+          style: {
+            backgroundColor: "#a72861ff",
+            "&:hover": { backgroundColor: "#218838" },
+          },
+        },
+        {
+          props: { variant: "addFunds" },
+          style: {
+            backgroundColor: "#28a745",
+            "&:hover": { backgroundColor: "#218838" },
+          },
+        },
+        {
+          props: { variant: "resetAll" },
+          style: {
+            backgroundColor: "#bc7d39ff",
+            "&:hover": { backgroundColor: "#bfb224ff" },
+          },
+        },
+        {
+          props: { variant: "logout" },
+          style: {
+            backgroundColor: "#e63c3c",
+            "&:hover": { backgroundColor: "#e04394" },
+          },
+        },
+
+         {
+          props: { variant: "deleteop" },
+          style: {
+            backgroundColor: "#e63c3c",
+            "&:hover": { backgroundColor: "#e04394" },
+          },
+        },
+
+        {
+          props: { variant: "edit" },
+          style: {
+            backgroundColor: "#4dafffff",
+            "&:hover": { backgroundColor: "#3783c1ff" },
+          },
+        },
+        {
+          props: { variant: "delete" },
+          style: {
+            backgroundColor: "#dc3545",
+            "&:hover": { backgroundColor: "#b52a38" },
+          },
+        },
+      ],
     },
     MuiTextField: {
       styleOverrides: {

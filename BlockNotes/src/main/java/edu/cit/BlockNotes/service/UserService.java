@@ -26,6 +26,11 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        User existingUser = userRepository.findByUsername(user.getUsername());
+        if (existingUser != null) {
+            throw new RuntimeException("Username already exists. Please choose another.");
+        }
+
         user.setBalance(0.0);
         return userRepository.save(user);
     }
