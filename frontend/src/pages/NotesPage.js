@@ -41,8 +41,9 @@ function NotesPage({
   setSort,
   userBalance,
   onAddFunds,
-  onClearAll,   // ✅ added this line
+  onClearAll, 
   userId,
+  username,
 }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [viewNote, setViewNote] = useState(null);
@@ -144,7 +145,7 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
       >
         <Box>
           <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            BlockNotes
+            Welcome, {username}
           </Typography>
           <Typography variant="body1" sx={{ color: "text.secondary" }}>
             Balance: ₱{userBalance?.toFixed(2) || "0.00"}
@@ -376,7 +377,7 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleCancelDelete}variant="outlined" color="secondary">Cancel</Button>
           <Button onClick={handleConfirmDelete} color="error" variant="deleteop">
             Confirm
           </Button>

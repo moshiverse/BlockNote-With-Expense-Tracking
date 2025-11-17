@@ -2,20 +2,23 @@ import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, InputAdornment, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
 
-// Icons
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import EmailIcon from '@mui/icons-material/Email';
+import PersonIcon from '@mui/icons-material/Person';
 
 function RegisterPage({ onRegister, onSwitchToLogin }) {
-  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState(''); 
+  const [lastName, setLastName] = useState('');  
+  const [email, setEmail] = useState('');  
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onRegister({ username, password });
+    onRegister({ firstName, lastName, email, password });
   };
 
   return (
@@ -45,19 +48,51 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
-              label="Username"
+              label="First Name"
               fullWidth
               margin="normal"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <AccountCircle />
+                    <PersonIcon />
                   </InputAdornment>
                 ),
               }}
             />
+            {/* Last Name */}
+            <TextField
+              label="Last Name"
+              fullWidth
+              margin="normal"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {/* Email */}
+            <TextField
+              label="Email"
+              fullWidth
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            {/* Password */}
             <TextField
               label="Password"
               type={showPassword ? 'text' : 'password'}
@@ -84,7 +119,6 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
               Register
             </Button>
 
-            {/* Modern link style */}
             <Typography
               align="center"
               sx={{

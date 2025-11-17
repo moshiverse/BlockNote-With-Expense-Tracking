@@ -124,22 +124,22 @@ function App() {
     setNewType(note.type || "note");
   };
 
-  const handleLogin = async ({ username, password }) => {
+  const handleLogin = async ({ email, password }) => {
     setError(null);
     try {
-      const res = await axios.post("http://localhost:8080/api/users/login", { username, password });
+      const res = await axios.post("http://localhost:8080/api/users/login", { email, password });
       updateUserAndStorage(res.data);
       setPage("notes");
       setSuccess("Logged in successfully!");
     } catch {
-      setError("Invalid username or password");
+      setError("Invalid email or password");
     }
   };
 
-  const handleRegister = async ({ username, password }) => {
+  const handleRegister = async ({ firstName, lastName, email, password }) => {
     setError(null);
     try {
-      await axios.post("http://localhost:8080/api/users", { username, password });
+      await axios.post("http://localhost:8080/api/users", { firstName, lastName, email, password });
       setPage("login");
       setSuccess("Registration successful! Please log in.");
     } catch (err) {
@@ -243,6 +243,7 @@ function App() {
           setSort={setSort}
           userBalance={user.balance}
           userId={user.id}
+          username={`${user.firstName} ${user.lastName}`}
         />
       )}
     </ThemeProvider>

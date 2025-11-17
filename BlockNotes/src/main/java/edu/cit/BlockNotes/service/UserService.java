@@ -3,6 +3,7 @@ package edu.cit.BlockNotes.service;
 import edu.cit.BlockNotes.entity.User;
 import edu.cit.BlockNotes.exceptions.ResourceNotFoundException;
 import edu.cit.BlockNotes.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,9 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAllUsers() {
@@ -26,18 +29,26 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        User existingUser = userRepository.findByUsername(user.getUsername());
+        User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
-            throw new RuntimeException("Username already exists. Please choose another.");
+            throw new RuntimeException("Email already exists. Please choose another.");
         }
+
+        if (user.getFirstName() == null || user.getFirstName().trim().isEmpty() ||
+                user.getLastName() == null || user.getLastName().trim().isEmpty()) {
+            throw new RuntimeException("First name and Last name are required.");
+        }
+
+        String hashedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashedPassword);
 
         user.setBalance(0.0);
         return userRepository.save(user);
     }
 
-    public User login(String username, String password) {
-        User user = userRepository.findByUsername(username);
-        if (user == null || !user.getPassword().equals(password)) {
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email);
+        if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
         return user;
