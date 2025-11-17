@@ -20,7 +20,7 @@ public record NoteDTO(
                 note.getType(),
                 note.getAmount(),
                 note.getCreatedAt(),
-                note.getUser() != null ? note.getUser().getUsername() : null
+                note.getUser() != null ? note.getUser().getEmail() : null
         );
     }
 }

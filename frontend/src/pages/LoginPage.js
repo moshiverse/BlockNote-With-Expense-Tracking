@@ -8,15 +8,16 @@ import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EmailIcon from '@mui/icons-material/Email';
 
 function LoginPage({ onLogin, onSwitchToRegister }) {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin({ username, password });
+    onLogin({ email, password });
   };
 
   return (
@@ -46,15 +47,16 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
-              label="Username"
+              label="Email"
               fullWidth
               margin="normal"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email" 
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <AccountCircle />
+                    <EmailIcon />
                   </InputAdornment>
                 ),
               }}

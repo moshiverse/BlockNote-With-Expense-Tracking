@@ -38,10 +38,9 @@ public class UserController {
         }
     }
 
-
     @PostMapping("/login")
     public User login(@RequestBody User loginRequest) {
-        return userService.login(loginRequest.getUsername(), loginRequest.getPassword());
+        return userService.login(loginRequest.getEmail(), loginRequest.getPassword());
     }
 
     @PostMapping("/{id}/add-funds")
