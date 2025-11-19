@@ -1,5 +1,13 @@
 import React, { useState } from "react";
 import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+import {
   Container,
   Typography,
   Box,
@@ -192,6 +200,81 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
       </Box>
 
       <Divider sx={{ mb: 3 }} />
+      <Box sx={{ my: 4 }}>
+        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
+          Insights & Visualization
+        </Typography>
+
+        <Grid container spacing={4}>
+          {/* Pie Chart */}
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3, height: 350 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Expenses Breakdown
+              </Typography>
+
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={notes
+                      .filter((n) => n.type === "expense")
+                      .map((n) => ({
+                        name: n.title,
+                        value: n.amount,
+                      }))}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    fill="#8884d8"
+                    label
+                  >
+                    {notes
+                      .filter((n) => n.type === "expense")
+                      .map((_, i) => (
+                        <Cell key={i} />
+                      ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                Summary
+              </Typography>
+
+              <Typography variant="body1">
+                Total Notes: <b>{notes.filter((n) => n.type === "note").length}</b>
+              </Typography>
+
+              <Typography variant="body1">
+                Total Expenses: <b>{notes.filter((n) => n.type === "expense").length}</b>
+              </Typography>
+
+              <Typography variant="body1" sx={{ mt: 1 }}>
+                Total Spent:{" "}
+                <b>
+                  ₱
+                  {notes
+                    .filter((n) => n.type === "expense")
+                    .reduce((acc, n) => acc + (n.amount || 0), 0)
+                    .toFixed(2)}
+                </b>
+              </Typography>
+
+              <Typography variant="body1" sx={{ mt: 1 }}>
+                Current Balance: <b>₱{userBalance?.toFixed(2)}</b>
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+
 
       <Grid container spacing={4} justifyContent="flex-start">
         {notes.length === 0 ? (

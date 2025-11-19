@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Paper, InputAdornment, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
-
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import EmailIcon from '@mui/icons-material/Email';
 import PersonIcon from '@mui/icons-material/Person';
 
-function RegisterPage({ onRegister, onSwitchToLogin }) {
-  const [firstName, setFirstName] = useState(''); 
-  const [lastName, setLastName] = useState('');  
-  const [email, setEmail] = useState('');  
+function RegisterPage({ onRegister }) {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onRegister({ firstName, lastName, email, password });
+    try {
+      await onRegister({ firstName, lastName, email, password });
+      navigate('/login'); // Redirect after successful registration
+    } catch (err) {
+      setError(err.message || 'Registration failed');
+    }
   };
 
   return (
@@ -34,17 +41,11 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
           zIndex: -1,
         }}
       />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, type: 'spring' }}
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, type: 'spring' }}>
         <Paper sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 420 }}>
-          <Typography variant="h1" align="center" gutterBottom>
-            Register
-          </Typography>
+          <Typography variant="h1" align="center" gutterBottom>Register</Typography>
           <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
-            Keep notes and Track your Expenses <br />
+            Keep notes and track your expenses
           </Typography>
           <Box component="form" onSubmit={handleSubmit}>
             <TextField
@@ -53,30 +54,16 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
               margin="normal"
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon />
-                  </InputAdornment>
-                ),
-              }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon /></InputAdornment> }}
             />
-            {/* Last Name */}
             <TextField
               label="Last Name"
               fullWidth
               margin="normal"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <PersonIcon />
-                  </InputAdornment>
-                ),
-              }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonIcon /></InputAdornment> }}
             />
-            {/* Email */}
             <TextField
               label="Email"
               fullWidth
@@ -84,15 +71,8 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon />
-                  </InputAdornment>
-                ),
-              }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment> }}
             />
-            {/* Password */}
             <TextField
               label="Password"
               type={showPassword ? 'text' : 'password'}
@@ -101,11 +81,7 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon />
-                  </InputAdornment>
-                ),
+                startAdornment: <InputAdornment position="start"><LockIcon /></InputAdornment>,
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
@@ -115,20 +91,12 @@ function RegisterPage({ onRegister, onSwitchToLogin }) {
                 )
               }}
             />
-            <Button variant="register" type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>
-              Register
-            </Button>
-
+            {error && <Typography color="error" variant="body2">{error}</Typography>}
+            <Button variant="contained" type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>Register</Button>
             <Typography
               align="center"
-              sx={{
-                mt: 1,
-                color: 'primary.main',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                '&:hover': { opacity: 0.8 }
-              }}
-              onClick={onSwitchToLogin}
+              sx={{ mt: 1, color: 'primary.main', cursor: 'pointer', textDecoration: 'underline', '&:hover': { opacity: 0.8 } }}
+              onClick={() => navigate('/login')}
             >
               Already have an account? Sign In
             </Typography>

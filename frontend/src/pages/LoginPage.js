@@ -1,23 +1,28 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Paper, InputAdornment, IconButton } from '@mui/material';
 import { motion } from 'framer-motion';
-
-// Icons
-import AccountCircle from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import EmailIcon from '@mui/icons-material/Email';
 
-function LoginPage({ onLogin, onSwitchToRegister }) {
+function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onLogin({ email, password });
+    try {
+      await onLogin({ email, password });
+      navigate('/notes'); // Redirect after successful login
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    }
   };
 
   return (
@@ -33,15 +38,9 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
           zIndex: -1,
         }}
       />
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, type: 'spring' }}
-      >
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, type: 'spring' }}>
         <Paper sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 420 }}>
-          <Typography variant="h1" align="center" gutterBottom>
-            Login
-          </Typography>
+          <Typography variant="h1" align="center" gutterBottom>Login</Typography>
           <Typography variant="body1" align="center" color="text.secondary" sx={{ mb: 4 }}>
             Authenticate to access BlockNote.
           </Typography>
@@ -52,14 +51,8 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
               margin="normal"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              type="email" 
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon />
-                  </InputAdornment>
-                ),
-              }}
+              type="email"
+              InputProps={{ startAdornment: <InputAdornment position="start"><EmailIcon /></InputAdornment> }}
             />
             <TextField
               label="Password"
@@ -69,11 +62,7 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <LockIcon />
-                  </InputAdornment>
-                ),
+                startAdornment: <InputAdornment position="start"><LockIcon /></InputAdornment>,
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
@@ -83,21 +72,12 @@ function LoginPage({ onLogin, onSwitchToRegister }) {
                 )
               }}
             />
-            <Button variant="login" type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>
-              Login
-            </Button>
-
-            {/* Modern link style */}
+            {error && <Typography color="error" variant="body2">{error}</Typography>}
+            <Button variant="contained" type="submit" fullWidth sx={{ mt: 3, mb: 2 }}>Login</Button>
             <Typography
               align="center"
-              sx={{
-                mt: 1,
-                color: 'primary.main',
-                cursor: 'pointer',
-                textDecoration: 'underline',
-                '&:hover': { opacity: 0.8 }
-              }}
-              onClick={onSwitchToRegister}
+              sx={{ mt: 1, color: 'primary.main', cursor: 'pointer', textDecoration: 'underline', '&:hover': { opacity: 0.8 } }}
+              onClick={() => navigate('/register')}
             >
               Don't have an account? Register
             </Typography>

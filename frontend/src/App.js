@@ -1,11 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import NotesPage from "./pages/NotesPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
+
 import theme from "./theme/theme";
 import ParticleBackground from "./components/NoteCard";
+
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import NotesPage from "./pages/NotesPage";
+import VisualizationPage from "./pages/VisualizationPage";
+
 import API_BASE_URL from "./apiConfig";
 
 function App() {
@@ -20,19 +25,20 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
 
-  const [page, setPage] = useState("login");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("date");
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
+  // Update user and localStorage
   const updateUserAndStorage = useCallback((userData) => {
     if (userData) localStorage.setItem("user", JSON.stringify(userData));
     else localStorage.removeItem("user");
     setUser(userData);
   }, []);
 
+  // Refresh session on mount
   useEffect(() => {
     const refreshUserSession = async () => {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
@@ -50,6 +56,7 @@ function App() {
     refreshUserSession();
   }, [updateUserAndStorage]);
 
+  // Fetch notes when user changes
   useEffect(() => {
     const fetchNotes = async () => {
       if (!user?.id) return setNotes([]);
@@ -75,6 +82,7 @@ function App() {
     }
   }, [user?.id, updateUserAndStorage]);
 
+  // CRUD operations
   const addOrUpdateNote = async (e) => {
     e.preventDefault();
     setError(null);
@@ -130,10 +138,10 @@ function App() {
     try {
       const res = await axios.post(`${API_BASE_URL}/api/users/login`, { email, password });
       updateUserAndStorage(res.data);
-      setPage("notes");
       setSuccess("Logged in successfully!");
     } catch {
       setError("Invalid email or password");
+      throw new Error("Login failed");
     }
   };
 
@@ -141,11 +149,11 @@ function App() {
     setError(null);
     try {
       await axios.post(`${API_BASE_URL}/api/users`, { firstName, lastName, email, password });
-      setPage("login");
       setSuccess("Registration successful! Please log in.");
     } catch (err) {
       setError(err.response?.data?.error || "Registration failed.");
       console.error(err);
+      throw new Error("Registration failed");
     }
   };
 
@@ -174,11 +182,10 @@ function App() {
 
   const handleLogout = useCallback(() => {
     updateUserAndStorage(null);
-    setPage("login");
     setSuccess("Logged out successfully!");
   }, [updateUserAndStorage]);
 
-    const filteredNotes = React.useMemo(
+  const filteredNotes = React.useMemo(
     () =>
       notes
         .filter(
@@ -190,7 +197,7 @@ function App() {
           if (sort === "title") return a.title.localeCompare(b.title);
           if (sort === "expense") return (a.amount || 0) - (b.amount || 0);
           if (sort === "note") return a.content.localeCompare(b.content);
-          return new Date(b.createdAt) - new Date(a.createdAt); // default: date
+          return new Date(b.createdAt) - new Date(a.createdAt);
         }),
     [notes, search, sort]
   );
@@ -202,51 +209,59 @@ function App() {
       <CssBaseline />
       <ParticleBackground />
 
-      <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+      <Snackbar open={!!error} autoHideDuration={4000} onClose={() => setError(null)} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert severity="error" variant="filled">{error}</Alert>
       </Snackbar>
 
-      <Snackbar open={!!success} autoHideDuration={4000} onClose={() => setSuccess(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+      <Snackbar open={!!success} autoHideDuration={4000} onClose={() => setSuccess(null)} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
         <Alert severity="success" variant="filled">{success}</Alert>
       </Snackbar>
 
-      {!user ? (
-        page === "register" ? (
-          <RegisterPage onRegister={handleRegister} onSwitchToLogin={() => setPage("login")} />
-        ) : (
-          <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setPage("register")} />
-        )
-      ) : (
-        <NotesPage
-          notes={filteredNotes}
-          onAdd={addOrUpdateNote}
-          onDelete={deleteNote}
-          onEdit={editNote}
-          onLogout={handleLogout}
-          onAddFunds={handleAddFunds}
-          onClearAll={handleClearAll} 
-          newTitle={newTitle}
-          setNewTitle={setNewTitle}
-          newContent={newContent}
-          setNewContent={setNewContent}
-          newAmount={newAmount}
-          setNewAmount={setNewAmount}
-          newType={newType}
-          setNewType={setNewType}
-          isEditing={isEditing}
-          setIsEditing={setIsEditing}
-          setEditingNote={setEditingNote}
-          search={search}
-          setSearch={setSearch}
-          sort={sort}
-          setSort={setSort}
-          userBalance={user.balance}
-          userId={user.id}
-          username={`${user.firstName} ${user.lastName}`}
-        />
-      )}
+      <Router>
+        <Routes>
+          <Route path="/login" element={user ? <Navigate to="/notes" /> : <LoginPage onLogin={handleLogin} />} />
+          <Route path="/register" element={user ? <Navigate to="/notes" /> : <RegisterPage onRegister={handleRegister} />} />
+          <Route
+            path="/notes"
+            element={user ? (
+              <NotesPage
+                notes={filteredNotes}
+                onAdd={addOrUpdateNote}
+                onDelete={deleteNote}
+                onEdit={editNote}
+                onLogout={handleLogout}
+                onAddFunds={handleAddFunds}
+                onClearAll={handleClearAll}
+                newTitle={newTitle}
+                setNewTitle={setNewTitle}
+                newContent={newContent}
+                setNewContent={setNewContent}
+                newAmount={newAmount}
+                setNewAmount={setNewAmount}
+                newType={newType}
+                setNewType={setNewType}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                setEditingNote={setEditingNote}
+                search={search}
+                setSearch={setSearch}
+                sort={sort}
+                setSort={setSort}
+                userBalance={user.balance}
+                userId={user.id}
+                username={`${user.firstName} ${user.lastName}`}
+              />
+            ) : (
+              <Navigate to="/login" />
+            )}
+          />
+          <Route
+            path="/visualization"
+            element={user ? <VisualizationPage notes={notes} /> : <Navigate to="/login" />}
+          />
+          <Route path="*" element={<Navigate to={user ? "/notes" : "/login"} />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }
