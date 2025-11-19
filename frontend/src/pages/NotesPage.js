@@ -49,7 +49,7 @@ function NotesPage({
   setSort,
   userBalance,
   onAddFunds,
-  onClearAll, 
+  onClearAll,
   userId,
   username,
 }) {
@@ -61,7 +61,7 @@ function NotesPage({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const [filterType, setFilterType] = useState("all"); // NEW: Filter notes by type
+  const [filterType, setFilterType] = useState("all"); // Filter by type
 
   const openAdd = () => {
     setIsEditing(false);
@@ -134,12 +134,11 @@ function NotesPage({
     setConfirmDeleteOpen(false);
   };
 
-  // NEW: Filtered notes by type + search
   const filteredNotes = notes
     .filter((n) => (filterType === "all" ? true : n.type === filterType))
     .filter((n) => n.title.toLowerCase().includes(search.toLowerCase()));
 
-  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"]; // NEW: Pie chart colors
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"];
 
   return (
     <Container maxWidth={false} disableGutters sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}>
@@ -163,13 +162,6 @@ function NotesPage({
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Select value={sort} onChange={(e) => setSort(e.target.value)} size="small" sx={{ minWidth: 140 }}>
-            <MenuItem value="date">Date</MenuItem>
-            <MenuItem value="title">Title</MenuItem>
-            <MenuItem value="expense">Notes</MenuItem>
-            <MenuItem value="note">Expenses</MenuItem> 
-          </Select>
-
           <TextField
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -177,18 +169,6 @@ function NotesPage({
             placeholder="Search notes..."
             sx={{ minWidth: 180 }}
           />
-
-          {/* NEW: Filter by type */}
-          <Select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            size="small"
-            sx={{ minWidth: 120 }}
-          >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="note">Notes</MenuItem>
-            <MenuItem value="expense">Expenses</MenuItem>
-          </Select>
 
           <IconButton onClick={openAdd} color="primary" sx={{ width: 48, height: 48 }}>
             <AddIcon fontSize="large" />
@@ -210,13 +190,26 @@ function NotesPage({
           >
             Logout
           </Button>
+
+          {/* Filter on the right */}
+          <Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            size="small"
+            sx={{ minWidth: 120 }}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="note">Notes</MenuItem>
+            <MenuItem value="expense">Expenses</MenuItem>
+          </Select>
         </Box>
       </Box>
 
       <Divider sx={{ mb: 3 }} />
+
       <Box sx={{ my: 4 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
-          Insights & Visualization
+          Data Visualization
         </Typography>
 
         <Grid container spacing={4}>
@@ -229,27 +222,23 @@ function NotesPage({
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={notes
-                      .filter((n) => n.type === "expense")
-                      .map((n) => ({
-                        name: n.title,
-                        value: n.amount,
-                      }))}
+                    data={notes.filter((n) => n.type === "expense").map((n) => ({
+                      name: n.title,
+                      value: n.amount,
+                    }))}
                     dataKey="value"
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={120}
+                    outerRadius={140} // expanded width
                     fill="#8884d8"
-                    label
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} // show labels
                   >
-                    {notes
-                      .filter((n) => n.type === "expense")
-                      .map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} /> // NEW: color for each slice
-                      ))}
+                    {notes.filter((n) => n.type === "expense").map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip formatter={(value) => `₱${value.toFixed(2)}`} />
                 </PieChart>
               </ResponsiveContainer>
             </Paper>
@@ -370,7 +359,7 @@ function NotesPage({
         )}
       </Grid>
 
-     {/* View Dialog */}
+      {/* View Dialog */}
       <Dialog open={!!viewNote} onClose={closeView} fullWidth maxWidth="md">
         <DialogTitle>{viewNote?.title || "Untitled"}</DialogTitle>
         <DialogContent dividers>
@@ -503,7 +492,6 @@ function NotesPage({
           </Button>
         </DialogActions>
       </Dialog>
-
     </Container>
   );
 }
