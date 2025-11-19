@@ -1,4 +1,3 @@
-// src/apiConfig.js
-const API_BASE_URL = "https://blocknotes-backend.onrender.com"; // PASTE YOUR RENDER BACKEND URL HERE
+const API_BASE_URL = "https://blocknotes-app.onrender.com";
 
 export default API_BASE_URL;
