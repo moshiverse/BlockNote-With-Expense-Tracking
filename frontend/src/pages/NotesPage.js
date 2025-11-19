@@ -61,7 +61,6 @@ function NotesPage({
 
   const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"];
 
-  // Dialog handlers
   const openAddDialog = () => {
     setIsEditing(false);
     setEditingNote(null);
@@ -100,9 +99,8 @@ function NotesPage({
 
   return (
     <Container
-      maxWidth={false}
-      disableGutters
-      sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}
+      maxWidth="xl"
+      sx={{ mt: 4, px: { xs: 2, sm: 4, md: 6, lg: 6 } }}
     >
       {/* HEADER */}
       <Box
@@ -159,10 +157,11 @@ function NotesPage({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* MAIN LAYOUT: NOTES LEFT — VISUALIZATION RIGHT */}
-      <Grid container spacing={4} sx={{ mt: 2 }}>
-        {/* LEFT SIDE — NOTES */}
-        <Grid item xs={12} md={6}>
+      {/* MAIN SPLIT LAYOUT */}
+      <Grid container spacing={4} columnSpacing={6} sx={{ mt: 2 }}>
+        
+        {/* LEFT — NOTES */}
+        <Grid item xs={12} md={6} sx={{ pr: 3 }}>
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
             Notes
           </Typography>
@@ -198,8 +197,7 @@ function NotesPage({
                       title={note.title}
                       sx={{
                         fontWeight: 700,
-                        color:
-                          note.type === "expense" ? "error.main" : "primary.main",
+                        color: note.type === "expense" ? "error.main" : "primary.main",
                       }}
                     >
                       {note.title || "Untitled"}
@@ -250,8 +248,13 @@ function NotesPage({
           )}
         </Grid>
 
-        {/* RIGHT SIDE — DATA VISUALIZATION */}
-        <Grid item xs={12} md={6}>
+        {/* RIGHT — VISUALIZATION */}
+        <Grid
+          item
+          xs={12}
+          md={6}
+          sx={{ minWidth: 450 }}
+        >
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
             Data Visualization
           </Typography>
@@ -265,10 +268,13 @@ function NotesPage({
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={notes.filter((n) => n.type === "expense").map((n) => ({
-                    name: n.title,
-                    value: n.amount,
-                  }))}
+                  data={notes
+                    .filter((n) => n.type === "expense")
+                    .map((n) => ({
+                      name: n.title,
+                      value: n.amount,
+                    }))
+                  }
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -297,12 +303,10 @@ function NotesPage({
             </Typography>
 
             <Typography variant="body1">
-              Total Notes:{" "}
-              <b>{notes.filter((n) => n.type === "note").length}</b>
+              Total Notes: <b>{notes.filter((n) => n.type === "note").length}</b>
             </Typography>
             <Typography variant="body1">
-              Total Expenses:{" "}
-              <b>{notes.filter((n) => n.type === "expense").length}</b>
+              Total Expenses: <b>{notes.filter((n) => n.type === "expense").length}</b>
             </Typography>
 
             <Typography variant="body1" sx={{ mt: 1 }}>
@@ -323,7 +327,8 @@ function NotesPage({
         </Grid>
       </Grid>
 
-      {/* All dialogs remain unchanged below */}
+      {/* --- DIALOGS (unchanged) --- */}
+
       {/* View Dialog */}
       <Dialog open={!!viewNote} onClose={() => setViewNote(null)} fullWidth maxWidth="md">
         <DialogTitle>{viewNote?.title || "Untitled"}</DialogTitle>
@@ -460,9 +465,7 @@ function NotesPage({
       <Dialog open={logoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Logout</DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to logout?
-          </Typography>
+          <Typography>Are you sure you want to logout?</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogoutConfirmOpen(false)}>Cancel</Button>
