@@ -128,7 +128,7 @@ function App() {
   const handleLogin = async ({ email, password }) => {
     setError(null);
     try {
-      const res = await axios.post(`${API_BASE_URL}/api/users/login", { email, password });
+      const res = await axios.post(`${API_BASE_URL}/api/users/login`, { email, password });
       updateUserAndStorage(res.data);
       setPage("notes");
       setSuccess("Logged in successfully!");
@@ -140,7 +140,7 @@ function App() {
   const handleRegister = async ({ firstName, lastName, email, password }) => {
     setError(null);
     try {
-      await axios.post("http://localhost:8080/api/users", { firstName, lastName, email, password });
+      await axios.post(`${API_BASE_URL}/api/users`, { firstName, lastName, email, password });
       setPage("login");
       setSuccess("Registration successful! Please log in.");
     } catch (err) {
@@ -152,7 +152,7 @@ function App() {
   const handleAddFunds = async (amount) => {
     setError(null);
     try {
-      const res = await axios.post(`http://localhost:8080/api/users/${user.id}/add-funds`, { amount });
+      const res = await axios.post(`${API_BASE_URL}/api/users/${user.id}/add-funds`, { amount });
       updateUserAndStorage(res.data);
       setSuccess("Funds added successfully!");
     } catch (err) {
@@ -163,7 +163,7 @@ function App() {
   const handleClearAll = async () => {
     setError(null);
     try {
-      await axios.post(`http://localhost:8080/api/users/${user.id}/clear-all`);
+      await axios.post(`${API_BASE_URL}/api/users/${user.id}/clear-all`);
       updateUserAndStorage({ ...user, balance: 0 });
       setNotes([]);
       setSuccess("All data cleared successfully!");
