@@ -24,6 +24,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:copy": "npm run build && xcopy /E /Y build ..\\BlockNotes\\src\\main\\resources\\static\\",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
