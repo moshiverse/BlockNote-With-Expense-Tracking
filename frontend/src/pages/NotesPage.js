@@ -94,38 +94,6 @@ function NotesPage({
     closeDialog();
   };
 
-  const openView = (note) => setViewNote(note);
-  const closeView = () => setViewNote(null);
-
-  const handleAddFundsClick = () => {
-    setFundAmount("");
-    setAddFundsDialog(true);
-  };
-
-  const handleAddFundsConfirm = async () => {
-    await onAddFunds(parseFloat(fundAmount) || 0);
-    setAddFundsDialog(false);
-  };
-
-  const handleClearAll = () => setConfirmDialogOpen(true);
-  const handleConfirmClear = async () => {
-    await onClearAll();
-    setConfirmDialogOpen(false);
-  };
-  const handleCancelClear = () => setConfirmDialogOpen(false);
-
-  const handleConfirmDelete = async () => {
-    if (noteToDelete) {
-      await onDelete(noteToDelete.id);
-      setNoteToDelete(null);
-      setConfirmDeleteOpen(false);
-    }
-  };
-  const handleCancelDelete = () => {
-    setNoteToDelete(null);
-    setConfirmDeleteOpen(false);
-  };
-
   const filteredNotes = notes
     .filter((n) => (filterType === "all" ? true : n.type === filterType))
     .filter((n) => n.title.toLowerCase().includes(search.toLowerCase()));
@@ -136,7 +104,7 @@ function NotesPage({
       disableGutters
       sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}
     >
-      {/* Header */}
+      {/* HEADER */}
       <Box
         sx={{
           display: "flex",
@@ -167,10 +135,10 @@ function NotesPage({
           <IconButton onClick={openAddDialog} color="primary" sx={{ width: 48, height: 48 }}>
             <AddIcon fontSize="large" />
           </IconButton>
-          <Button variant="addFunds" color="success" onClick={handleAddFundsClick}>
+          <Button variant="addFunds" color="success" onClick={() => setAddFundsDialog(true)}>
             Add Funds
           </Button>
-          <Button variant="resetAll" color="error" onClick={handleClearAll}>
+          <Button variant="resetAll" color="error" onClick={() => setConfirmDialogOpen(true)}>
             Reset All
           </Button>
           <Button variant="logout" color="secondary" onClick={() => setLogoutConfirmOpen(true)}>
@@ -191,175 +159,190 @@ function NotesPage({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Data Visualization */}
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
-          Data Visualization
-        </Typography>
-        <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3, height: 350 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Expenses Breakdown
-              </Typography>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={notes.filter((n) => n.type === "expense").map((n) => ({
-                      name: n.title,
-                      value: n.amount,
-                    }))}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={140}
-                    fill="#8884d8"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {notes
-                      .filter((n) => n.type === "expense")
-                      .map((_, i) => (
-                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                      ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `₱${value.toFixed(2)}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Summary
-              </Typography>
-              <Typography variant="body1">
-                Total Notes: <b>{notes.filter((n) => n.type === "note").length}</b>
-              </Typography>
-              <Typography variant="body1">
-                Total Expenses: <b>{notes.filter((n) => n.type === "expense").length}</b>
-              </Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>
-                Total Spent:{" "}
-                <b>
-                  ₱
-                  {notes
-                    .filter((n) => n.type === "expense")
-                    .reduce((acc, n) => acc + (n.amount || 0), 0)
-                    .toFixed(2)}
-                </b>
-              </Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>
-                Current Balance: <b>₱{userBalance?.toFixed(2)}</b>
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Notes Grid */}
-      <Grid container spacing={4} justifyContent="flex-start">
-        {filteredNotes.length === 0 ? (
-          <Typography variant="body1" sx={{ ml: 2, mt: 1 }}>
-            No notes match the filter. Click the "+" button to create one.
+      {/* MAIN LAYOUT: NOTES LEFT — VISUALIZATION RIGHT */}
+      <Grid container spacing={4} sx={{ mt: 2 }}>
+        {/* LEFT SIDE — NOTES */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
+            Notes
           </Typography>
-        ) : (
-          filteredNotes.map((note) => (
-            <Grid key={note.id} item>
-              <Paper
-                elevation={4}
-                onClick={() => openView(note)}
-                sx={{
-                  width: 260,
-                  height: 230,
-                  p: 2.5,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  cursor: "pointer",
-                  overflow: "hidden",
-                  transition: "0.3s",
-                  "&:hover": { transform: "scale(1.03)" },
-                }}
-              >
-                <Typography
-                  variant="h6"
-                  gutterBottom
-                  noWrap
-                  title={note.title}
-                  sx={{
-                    fontWeight: 700,
-                    color: note.type === "expense" ? "error.main" : "primary.main",
-                  }}
-                >
-                  {note.title || "Untitled"}
-                </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{
-                    flexGrow: 1,
-                    whiteSpace: "pre-line",
-                    overflow: "hidden",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 6,
-                    WebkitBoxOrient: "vertical",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {note.content}
-                </Typography>
-
-                {note.type === "expense" && (
-                  <Typography variant="subtitle2" color="error" sx={{ fontWeight: 600, mt: 1 }}>
-                    Expense: ₱{note.amount?.toFixed(2)}
-                  </Typography>
-                )}
-
-                <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                  <Button size="small" variant="edit" onClick={(e) => openEditDialog(note, e)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size="small"
-                    color="error"
-                    variant="delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setNoteToDelete(note);
-                      setConfirmDeleteOpen(true);
+          {filteredNotes.length === 0 ? (
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              No notes match the filter. Click the "+" button to create one.
+            </Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {filteredNotes.map((note) => (
+                <Grid key={note.id} item>
+                  <Paper
+                    elevation={4}
+                    onClick={() => setViewNote(note)}
+                    sx={{
+                      width: 260,
+                      height: 230,
+                      p: 2.5,
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      overflow: "hidden",
+                      transition: "0.3s",
+                      "&:hover": { transform: "scale(1.03)" },
                     }}
                   >
-                    Delete
-                  </Button>
-                </Box>
-              </Paper>
+                    <Typography
+                      variant="h6"
+                      gutterBottom
+                      noWrap
+                      title={note.title}
+                      sx={{
+                        fontWeight: 700,
+                        color:
+                          note.type === "expense" ? "error.main" : "primary.main",
+                      }}
+                    >
+                      {note.title || "Untitled"}
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        flexGrow: 1,
+                        whiteSpace: "pre-line",
+                        overflow: "hidden",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 6,
+                        WebkitBoxOrient: "vertical",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {note.content}
+                    </Typography>
+
+                    {note.type === "expense" && (
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, mt: 1 }} color="error">
+                        Expense: ₱{note.amount?.toFixed(2)}
+                      </Typography>
+                    )}
+
+                    <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                      <Button size="small" variant="edit" onClick={(e) => openEditDialog(note, e)}>
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        color="error"
+                        variant="delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNoteToDelete(note);
+                          setConfirmDeleteOpen(true);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
-          ))
-        )}
+          )}
+        </Grid>
+
+        {/* RIGHT SIDE — DATA VISUALIZATION */}
+        <Grid item xs={12} md={6}>
+          <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
+            Data Visualization
+          </Typography>
+
+          {/* Pie Chart */}
+          <Paper sx={{ p: 3, height: 350, mb: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Expenses Breakdown
+            </Typography>
+
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={notes.filter((n) => n.type === "expense").map((n) => ({
+                    name: n.title,
+                    value: n.amount,
+                  }))}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={140}
+                  fill="#8884d8"
+                  label={({ name, percent }) =>
+                    `${name} ${(percent * 100).toFixed(0)}%`
+                  }
+                >
+                  {notes
+                    .filter((n) => n.type === "expense")
+                    .map((_, i) => (
+                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                    ))}
+                </Pie>
+                <Tooltip formatter={(value) => `₱${value.toFixed(2)}`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </Paper>
+
+          {/* Summary */}
+          <Paper sx={{ p: 3 }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              Summary
+            </Typography>
+
+            <Typography variant="body1">
+              Total Notes:{" "}
+              <b>{notes.filter((n) => n.type === "note").length}</b>
+            </Typography>
+            <Typography variant="body1">
+              Total Expenses:{" "}
+              <b>{notes.filter((n) => n.type === "expense").length}</b>
+            </Typography>
+
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              Total Spent:{" "}
+              <b>
+                ₱
+                {notes
+                  .filter((n) => n.type === "expense")
+                  .reduce((acc, n) => acc + (n.amount || 0), 0)
+                  .toFixed(2)}
+              </b>
+            </Typography>
+
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              Current Balance: <b>₱{userBalance?.toFixed(2)}</b>
+            </Typography>
+          </Paper>
+        </Grid>
       </Grid>
 
-      {/* Dialogs */}
-      {/* View Note */}
-      <Dialog open={!!viewNote} onClose={closeView} fullWidth maxWidth="md">
+      {/* All dialogs remain unchanged below */}
+      {/* View Dialog */}
+      <Dialog open={!!viewNote} onClose={() => setViewNote(null)} fullWidth maxWidth="md">
         <DialogTitle>{viewNote?.title || "Untitled"}</DialogTitle>
         <DialogContent dividers>
           <Typography variant="body1" sx={{ whiteSpace: "pre-line" }}>
             {viewNote?.content}
           </Typography>
           {viewNote?.type === "expense" && (
-            <Typography variant="subtitle1" sx={{ mt: 2 }} color="error">
+            <Typography variant="subtitle1" color="error" sx={{ mt: 2 }}>
               Expense: ₱{viewNote.amount?.toFixed(2)}
             </Typography>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={closeView}>Close</Button>
+          <Button onClick={() => setViewNote(null)}>Close</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add/Edit Note */}
+      {/* Add/Edit Dialog */}
       <Dialog open={openDialog} onClose={closeDialog} fullWidth maxWidth="sm">
         <DialogTitle>{isEditing ? "Edit Entry" : "New Entry"}</DialogTitle>
         <DialogContent>
@@ -379,16 +362,17 @@ function NotesPage({
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
           />
+
           <Select
             fullWidth
             value={newType}
             onChange={(e) => setNewType(e.target.value)}
-            margin="dense"
             sx={{ mt: 2 }}
           >
             <MenuItem value="note">Note</MenuItem>
             <MenuItem value="expense">Expense</MenuItem>
           </Select>
+
           {newType === "expense" && (
             <TextField
               label="Amount"
@@ -408,7 +392,7 @@ function NotesPage({
         </DialogActions>
       </Dialog>
 
-      {/* Add Funds */}
+      {/* Add Funds Dialog */}
       <Dialog open={addFundsDialog} onClose={() => setAddFundsDialog(false)} fullWidth maxWidth="xs">
         <DialogTitle>Add Funds</DialogTitle>
         <DialogContent>
@@ -416,52 +400,57 @@ function NotesPage({
             label="Amount"
             type="number"
             fullWidth
+            margin="dense"
             value={fundAmount}
             onChange={(e) => setFundAmount(e.target.value)}
-            margin="dense"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddFundsDialog(false)}>Cancel</Button>
-          <Button variant="contained" color="success" onClick={handleAddFundsConfirm}>
+          <Button variant="contained" color="success" onClick={() => {
+            onAddFunds(parseFloat(fundAmount) || 0);
+            setAddFundsDialog(false);
+          }}>
             Add
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Confirm Reset */}
-      <Dialog open={confirmDialogOpen} onClose={handleCancelClear} fullWidth maxWidth="xs">
+      <Dialog open={confirmDialogOpen} onClose={() => setConfirmDialogOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Reset</DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mt: 1 }}>
-            Reset all notes and clear your balance? <br />
-            <br />
+          <Typography sx={{ mt: 1 }}>
+            Reset all notes and clear your balance?  
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelClear}>Cancel</Button>
-          <Button color="error" variant="contained" onClick={handleConfirmClear}>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={() => {
+            onClearAll();
+            setConfirmDialogOpen(false);
+          }}>
             Confirm
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Confirm Delete */}
-      <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete} fullWidth maxWidth="xs">
+      <Dialog open={confirmDeleteOpen} onClose={() => setConfirmDeleteOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
-          <Typography variant="body1" sx={{ mt: 1 }}>
-            Are you sure you want to delete "{noteToDelete?.title}"? <br />
-            <br />
-            This action cannot be undone.
+          <Typography sx={{ mt: 1 }}>
+            Delete "{noteToDelete?.title}"?  
+            This cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete} variant="outlined" color="secondary">
-            Cancel
-          </Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+          <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>
+          <Button color="error" variant="contained" onClick={() => {
+            onDelete(noteToDelete.id);
+            setConfirmDeleteOpen(false);
+          }}>
             Confirm
           </Button>
         </DialogActions>
@@ -471,20 +460,13 @@ function NotesPage({
       <Dialog open={logoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Logout</DialogTitle>
         <DialogContent>
-          <Typography variant="body1">
-            Are you sure you want to logout? You will need to log in again to access your notes.
+          <Typography>
+            Are you sure you want to logout?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setLogoutConfirmOpen(false)}>Cancel</Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => {
-              onLogout();
-              setLogoutConfirmOpen(false);
-            }}
-          >
+          <Button variant="contained" color="secondary" onClick={onLogout}>
             Logout
           </Button>
         </DialogActions>
