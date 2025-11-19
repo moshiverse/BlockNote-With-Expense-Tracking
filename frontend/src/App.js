@@ -6,6 +6,7 @@ import RegisterPage from "./pages/RegisterPage";
 import { ThemeProvider, CssBaseline, Snackbar, Alert } from "@mui/material";
 import theme from "./theme/theme";
 import ParticleBackground from "./components/NoteCard";
+import API_BASE_URL from "./apiConfig";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -37,7 +38,7 @@ function App() {
       const loggedInUser = JSON.parse(localStorage.getItem("user"));
       if (loggedInUser?.id) {
         try {
-          const res = await axios.get(`http://localhost:8080/api/users/${loggedInUser.id}`);
+          const res = await axios.get(`${API_BASE_URL}/api/users/${loggedInUser.id}`);
           updateUserAndStorage(res.data);
         } catch (err) {
           console.error(err);
@@ -53,7 +54,7 @@ function App() {
     const fetchNotes = async () => {
       if (!user?.id) return setNotes([]);
       try {
-        const res = await axios.get(`http://localhost:8080/api/notes/user/${user.id}`);
+        const res = await axios.get(`${API_BASE_URL}/api/notes/user/${user.id}`);
         setNotes(res.data);
       } catch (err) {
         setError("Error fetching notes. Check backend.");
@@ -66,7 +67,7 @@ function App() {
   const fetchUser = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const res = await axios.get(`http://localhost:8080/api/users/${user.id}`);
+      const res = await axios.get(`${API_BASE_URL}/api/users/${user.id}`);
       updateUserAndStorage(res.data);
     } catch (err) {
       setError("Could not refresh user data.");
@@ -85,15 +86,15 @@ function App() {
         amount: newType === "expense" ? parseFloat(newAmount) || 0.0 : null,
       };
       if (isEditing)
-        await axios.put(`http://localhost:8080/api/notes/${editingNote.id}`, noteData);
+        await axios.put(`${API_BASE_URL}/api/notes/${editingNote.id}`, noteData);
       else
-        await axios.post(`http://localhost:8080/api/notes/user/${user.id}`, noteData);
+        await axios.post(`${API_BASE_URL}/api/notes/user/${user.id}`, noteData);
 
       setNewTitle(""); setNewContent(""); setNewAmount(0.0); setNewType("note");
       setIsEditing(false); setEditingNote(null);
 
       await fetchUser();
-      const notesRes = await axios.get(`http://localhost:8080/api/notes/user/${user.id}`);
+      const notesRes = await axios.get(`${API_BASE_URL}/api/notes/user/${user.id}`);
       setNotes(notesRes.data);
       setSuccess(isEditing ? "Entry updated successfully!" : "New entry created!");
     } catch (err) {
@@ -105,7 +106,7 @@ function App() {
   const deleteNote = async (id) => {
     setError(null);
     try {
-      await axios.delete(`http://localhost:8080/api/notes/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/notes/${id}`);
       setNotes(notes.filter((n) => n.id !== id));
       await fetchUser();
       setSuccess("Entry deleted successfully!");
@@ -127,7 +128,7 @@ function App() {
   const handleLogin = async ({ email, password }) => {
     setError(null);
     try {
-      const res = await axios.post("http://localhost:8080/api/users/login", { email, password });
+      const res = await axios.post(`${API_BASE_URL}/api/users/login", { email, password });
       updateUserAndStorage(res.data);
       setPage("notes");
       setSuccess("Logged in successfully!");
