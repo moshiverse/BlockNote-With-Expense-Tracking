@@ -57,6 +57,11 @@ function NotesPage({
   const [viewNote, setViewNote] = useState(null);
   const [addFundsDialog, setAddFundsDialog] = useState(false);
   const [fundAmount, setFundAmount] = useState("");
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState(null);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
+  const [filterType, setFilterType] = useState("all"); // NEW: Filter notes by type
 
   const openAdd = () => {
     setIsEditing(false);
@@ -103,41 +108,38 @@ function NotesPage({
     setAddFundsDialog(false);
   };
 
-const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const handleClearAll = async () => {
+    setConfirmDialogOpen(true);
+  };
 
-const handleClearAll = async () => {
-      setConfirmDialogOpen(true);
-    };
+  const handleConfirmClear = async () => {
+    await onClearAll();
+    setConfirmDialogOpen(false);
+  };
 
-const handleConfirmClear = async () => {
-      await onClearAll();
-      setConfirmDialogOpen(false);
-    };
+  const handleCancelClear = () => {
+    setConfirmDialogOpen(false);
+  };
 
-const handleCancelClear = () => {
-      setConfirmDialogOpen(false);
-    };
+  const handleConfirmDelete = async () => {
+    if (noteToDelete) {
+      await onDelete(noteToDelete.id);
+      setNoteToDelete(null);
+      setConfirmDeleteOpen(false);
+    }
+  };
 
-const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-const [noteToDelete, setNoteToDelete] = useState(null);
-
-const handleConfirmDelete = async () => {
-  if (noteToDelete) {
-    await onDelete(noteToDelete.id);
+  const handleCancelDelete = () => {
     setNoteToDelete(null);
     setConfirmDeleteOpen(false);
-  }
-};
+  };
 
-const handleCancelDelete = () => {
-  setNoteToDelete(null);
-  setConfirmDeleteOpen(false);
-};
+  // NEW: Filtered notes by type + search
+  const filteredNotes = notes
+    .filter((n) => (filterType === "all" ? true : n.type === filterType))
+    .filter((n) => n.title.toLowerCase().includes(search.toLowerCase()));
 
-const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-
-
-
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"]; // NEW: Pie chart colors
 
   return (
     <Container maxWidth={false} disableGutters sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}>
@@ -176,6 +178,18 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
             sx={{ minWidth: 180 }}
           />
 
+          {/* NEW: Filter by type */}
+          <Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            size="small"
+            sx={{ minWidth: 120 }}
+          >
+            <MenuItem value="all">All</MenuItem>
+            <MenuItem value="note">Notes</MenuItem>
+            <MenuItem value="expense">Expenses</MenuItem>
+          </Select>
+
           <IconButton onClick={openAdd} color="primary" sx={{ width: 48, height: 48 }}>
             <AddIcon fontSize="large" />
           </IconButton>
@@ -206,7 +220,6 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
         </Typography>
 
         <Grid container spacing={4}>
-          {/* Pie Chart */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, height: 350 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
@@ -233,7 +246,7 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
                     {notes
                       .filter((n) => n.type === "expense")
                       .map((_, i) => (
-                        <Cell key={i} />
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} /> // NEW: color for each slice
                       ))}
                   </Pie>
                   <Tooltip />
@@ -275,14 +288,13 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
         </Grid>
       </Box>
 
-
       <Grid container spacing={4} justifyContent="flex-start">
-        {notes.length === 0 ? (
+        {filteredNotes.length === 0 ? (
           <Typography variant="body1" sx={{ ml: 2, mt: 1 }}>
-            No notes yet. Click the "+" button to create one.
+            No notes match the filter. Click the "+" button to create one.
           </Typography>
         ) : (
-          notes.map((note) => (
+          filteredNotes.map((note) => (
             <Grid key={note.id} item>
               <Paper
                 elevation={4}
@@ -351,7 +363,6 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
                   >
                     Delete
                   </Button>
-
                 </Box>
               </Paper>
             </Grid>
@@ -359,7 +370,7 @@ const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
         )}
       </Grid>
 
-      {/* View Dialog */}
+     {/* View Dialog */}
       <Dialog open={!!viewNote} onClose={closeView} fullWidth maxWidth="md">
         <DialogTitle>{viewNote?.title || "Untitled"}</DialogTitle>
         <DialogContent dividers>
