@@ -6,7 +6,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
 import {
   Container,
   Typography,
@@ -45,12 +44,9 @@ function NotesPage({
   setEditingNote,
   search,
   setSearch,
-  sort,
-  setSort,
   userBalance,
   onAddFunds,
   onClearAll,
-  userId,
   username,
 }) {
   const [openDialog, setOpenDialog] = useState(false);
@@ -61,25 +57,28 @@ function NotesPage({
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [noteToDelete, setNoteToDelete] = useState(null);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
-  const [filterType, setFilterType] = useState("all"); // Filter by type
+  const [filterType, setFilterType] = useState("all");
 
-  const openAdd = () => {
+  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"];
+
+  // Dialog handlers
+  const openAddDialog = () => {
     setIsEditing(false);
     setEditingNote(null);
     setNewTitle("");
     setNewContent("");
-    setNewAmount(0.0);
+    setNewAmount(0);
     setNewType("note");
     setOpenDialog(true);
   };
 
-  const openEdit = (note, e) => {
+  const openEditDialog = (note, e) => {
     if (e) e.stopPropagation();
     setIsEditing(true);
     setEditingNote(note);
     setNewTitle(note.title);
     setNewContent(note.content);
-    setNewAmount(note.amount || 0.0);
+    setNewAmount(note.amount || 0);
     setNewType(note.type || "note");
     setOpenDialog(true);
   };
@@ -108,18 +107,12 @@ function NotesPage({
     setAddFundsDialog(false);
   };
 
-  const handleClearAll = async () => {
-    setConfirmDialogOpen(true);
-  };
-
+  const handleClearAll = () => setConfirmDialogOpen(true);
   const handleConfirmClear = async () => {
     await onClearAll();
     setConfirmDialogOpen(false);
   };
-
-  const handleCancelClear = () => {
-    setConfirmDialogOpen(false);
-  };
+  const handleCancelClear = () => setConfirmDialogOpen(false);
 
   const handleConfirmDelete = async () => {
     if (noteToDelete) {
@@ -128,7 +121,6 @@ function NotesPage({
       setConfirmDeleteOpen(false);
     }
   };
-
   const handleCancelDelete = () => {
     setNoteToDelete(null);
     setConfirmDeleteOpen(false);
@@ -138,10 +130,13 @@ function NotesPage({
     .filter((n) => (filterType === "all" ? true : n.type === filterType))
     .filter((n) => n.title.toLowerCase().includes(search.toLowerCase()));
 
-  const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1"];
-
   return (
-    <Container maxWidth={false} disableGutters sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}>
+    <Container
+      maxWidth={false}
+      disableGutters
+      sx={{ mt: 4, px: { xs: 2, sm: 4, md: 8, lg: 12 } }}
+    >
+      {/* Header */}
       <Box
         sx={{
           display: "flex",
@@ -169,29 +164,18 @@ function NotesPage({
             placeholder="Search notes..."
             sx={{ minWidth: 180 }}
           />
-
-          <IconButton onClick={openAdd} color="primary" sx={{ width: 48, height: 48 }}>
+          <IconButton onClick={openAddDialog} color="primary" sx={{ width: 48, height: 48 }}>
             <AddIcon fontSize="large" />
           </IconButton>
-
           <Button variant="addFunds" color="success" onClick={handleAddFundsClick}>
             Add Funds
           </Button>
-
           <Button variant="resetAll" color="error" onClick={handleClearAll}>
             Reset All
           </Button>
-
-          <Button
-            variant="logout"
-            color="secondary"
-            onClick={() => setLogoutConfirmOpen(true)}
-            sx={{ ml: 1 }}
-          >
+          <Button variant="logout" color="secondary" onClick={() => setLogoutConfirmOpen(true)}>
             Logout
           </Button>
-
-          {/* Filter on the right */}
           <Select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
@@ -207,18 +191,17 @@ function NotesPage({
 
       <Divider sx={{ mb: 3 }} />
 
+      {/* Data Visualization */}
       <Box sx={{ my: 4 }}>
         <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
           Data Visualization
         </Typography>
-
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3, height: 350 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Expenses Breakdown
               </Typography>
-
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -230,13 +213,15 @@ function NotesPage({
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={140} // expanded width
+                    outerRadius={140}
                     fill="#8884d8"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} // show labels
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {notes.filter((n) => n.type === "expense").map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
+                    {notes
+                      .filter((n) => n.type === "expense")
+                      .map((_, i) => (
+                        <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                      ))}
                   </Pie>
                   <Tooltip formatter={(value) => `₱${value.toFixed(2)}`} />
                 </PieChart>
@@ -249,15 +234,12 @@ function NotesPage({
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Summary
               </Typography>
-
               <Typography variant="body1">
                 Total Notes: <b>{notes.filter((n) => n.type === "note").length}</b>
               </Typography>
-
               <Typography variant="body1">
                 Total Expenses: <b>{notes.filter((n) => n.type === "expense").length}</b>
               </Typography>
-
               <Typography variant="body1" sx={{ mt: 1 }}>
                 Total Spent:{" "}
                 <b>
@@ -268,7 +250,6 @@ function NotesPage({
                     .toFixed(2)}
                 </b>
               </Typography>
-
               <Typography variant="body1" sx={{ mt: 1 }}>
                 Current Balance: <b>₱{userBalance?.toFixed(2)}</b>
               </Typography>
@@ -277,6 +258,7 @@ function NotesPage({
         </Grid>
       </Box>
 
+      {/* Notes Grid */}
       <Grid container spacing={4} justifyContent="flex-start">
         {filteredNotes.length === 0 ? (
           <Typography variant="body1" sx={{ ml: 2, mt: 1 }}>
@@ -336,10 +318,9 @@ function NotesPage({
                 )}
 
                 <Box sx={{ mt: 1, display: "flex", justifyContent: "flex-end", gap: 1 }}>
-                  <Button size="small" variant="edit" onClick={(e) => openEdit(note, e)}>
+                  <Button size="small" variant="edit" onClick={(e) => openEditDialog(note, e)}>
                     Edit
                   </Button>
-
                   <Button
                     size="small"
                     color="error"
@@ -359,7 +340,8 @@ function NotesPage({
         )}
       </Grid>
 
-      {/* View Dialog */}
+      {/* Dialogs */}
+      {/* View Note */}
       <Dialog open={!!viewNote} onClose={closeView} fullWidth maxWidth="md">
         <DialogTitle>{viewNote?.title || "Untitled"}</DialogTitle>
         <DialogContent dividers>
@@ -377,11 +359,17 @@ function NotesPage({
         </DialogActions>
       </Dialog>
 
-      {/* Add/Edit Dialog */}
+      {/* Add/Edit Note */}
       <Dialog open={openDialog} onClose={closeDialog} fullWidth maxWidth="sm">
         <DialogTitle>{isEditing ? "Edit Entry" : "New Entry"}</DialogTitle>
         <DialogContent>
-          <TextField label="Title" fullWidth margin="dense" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+          <TextField
+            label="Title"
+            fullWidth
+            margin="dense"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+          />
           <TextField
             label="Content"
             fullWidth
@@ -391,7 +379,13 @@ function NotesPage({
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
           />
-          <Select fullWidth value={newType} onChange={(e) => setNewType(e.target.value)} margin="dense" sx={{ mt: 2 }}>
+          <Select
+            fullWidth
+            value={newType}
+            onChange={(e) => setNewType(e.target.value)}
+            margin="dense"
+            sx={{ mt: 2 }}
+          >
             <MenuItem value="note">Note</MenuItem>
             <MenuItem value="expense">Expense</MenuItem>
           </Select>
@@ -414,7 +408,7 @@ function NotesPage({
         </DialogActions>
       </Dialog>
 
-      {/* Add Funds Dialog */}
+      {/* Add Funds */}
       <Dialog open={addFundsDialog} onClose={() => setAddFundsDialog(false)} fullWidth maxWidth="xs">
         <DialogTitle>Add Funds</DialogTitle>
         <DialogContent>
@@ -435,43 +429,46 @@ function NotesPage({
         </DialogActions>
       </Dialog>
 
-      {/* Confirm Clear Dialog */}
+      {/* Confirm Reset */}
       <Dialog open={confirmDialogOpen} onClose={handleCancelClear} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Reset</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mt: 1 }}>
-            Reset all notes and clear your balance? <br /> <br />
+            Reset all notes and clear your balance? <br />
+            <br />
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelClear}>Cancel</Button>
-          <Button onClick={handleConfirmClear} color="error" variant="contained">
+          <Button color="error" variant="contained" onClick={handleConfirmClear}>
             Confirm
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Confirm Delete */}
       <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <Typography variant="body1" sx={{ mt: 1 }}>
-            Are you sure you want to delete "{noteToDelete?.title}"? <br /> <br />
+            Are you sure you want to delete "{noteToDelete?.title}"? <br />
+            <br />
             This action cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancelDelete}variant="outlined" color="secondary">Cancel</Button>
-          <Button onClick={handleConfirmDelete} color="error" variant="deleteop">
+          <Button onClick={handleCancelDelete} variant="outlined" color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
             Confirm
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        open={logoutConfirmOpen}
-        onClose={() => setLogoutConfirmOpen(false)}
-        fullWidth
-        maxWidth="xs"
-      >
+
+      {/* Confirm Logout */}
+      <Dialog open={logoutConfirmOpen} onClose={() => setLogoutConfirmOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>Confirm Logout</DialogTitle>
         <DialogContent>
           <Typography variant="body1">
@@ -484,7 +481,7 @@ function NotesPage({
             variant="contained"
             color="secondary"
             onClick={() => {
-              onLogout(); // Call the App’s logout handler
+              onLogout();
               setLogoutConfirmOpen(false);
             }}
           >
