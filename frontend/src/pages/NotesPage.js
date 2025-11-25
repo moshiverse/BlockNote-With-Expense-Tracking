@@ -253,8 +253,14 @@ function NotesPage({
           item
           xs={12}
           md={6}
-          sx={{ minWidth: 450 }}
+          sx={{
+            minWidth: 450,
+            position: "sticky",
+            top: 20,
+            height: "fit-content",
+          }}
         >
+
           <Typography variant="h5" sx={{ mb: 2, fontWeight: 700 }}>
             Data Visualization
           </Typography>
